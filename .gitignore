@@ -36,5 +36,4 @@ temp/
 .credentials
 
 # Webpack specific
-webpack.config.js
 .cache/
