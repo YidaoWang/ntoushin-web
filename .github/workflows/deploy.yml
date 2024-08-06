@@ -25,7 +25,7 @@ jobs:
       run: npm run build
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_CICD_USER_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_CICD_USER_SECRET_ACCESS_KEY }}
@@ -43,7 +43,7 @@ jobs:
         SOURCE_DIR: 'dist'
 
     - name: Invalidate CloudFront cache
-      uses: chetan/invalidate-cloudfront-action@v1
+      uses: chetan/invalidate-cloudfront-action@master
       with:
         distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
         paths: '/*'
