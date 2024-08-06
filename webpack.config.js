@@ -9,7 +9,7 @@ module.exports = {
   entry: "./js/client.js",
   devServer: {
     static: {
-      directory: path.join(__dirname, 'public'),
+      directory: path.join(__dirname, 'dist'),
     },
     compress: true,
     port: 8080,
@@ -36,12 +36,13 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'), // 出力先を 'dist' ディレクトリに変更
     filename: "client.min.js",
-    publicPath: './'
+    publicPath: '/'
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: path.join(__dirname, "public", "index.html"), // テンプレートファイルのパス
-      filename: "index.html" // 出力ファイルの名前
+      filename: "index.html", // 出力ファイルの名前
+      inject: false
     }),
     new CopyWebpackPlugin({
       patterns: [
