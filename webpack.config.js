@@ -1,6 +1,8 @@
 var debug = process.env.NODE_ENV !== "production";
 var webpack = require('webpack');
 var path = require('path');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   context: path.join(__dirname, "public"),
@@ -36,9 +38,20 @@ module.exports = {
     filename: "client.min.js",
     publicPath: '/' // 公開パスをルートに設定
   },
-  plugins: debug ? [] : [
-    new webpack.optimize.OccurrenceOrderPlugin(),
-    new (require('terser-webpack-plugin'))() // UglifyJsPluginの代わりにterser-webpack-pluginを使用
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, "public", "index.html"), // テンプレートファイルのパス
+      filename: "index.html" // 出力ファイルの名前
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'shared/models', to: 'shared/models' } // 'public/shared/models' ディレクトリを 'dist/shared/models' にコピー
+      ]
+    }),
+    ...(!debug ? [
+      new webpack.optimize.OccurrenceOrderPlugin(),
+      new (require('terser-webpack-plugin'))() // UglifyJsPluginの代わりにterser-webpack-pluginを使用
+    ] : [])
   ],
   optimization: {
     minimize: !debug,
