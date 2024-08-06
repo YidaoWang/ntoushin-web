@@ -125,7 +125,7 @@ function ImageUpload() {
       vision,
       {
         baseOptions: {
-          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+          modelAssetPath: "shared/models/face_landmarker.task"
         },
         runningMode: "IMAGE"
       });
@@ -137,7 +137,7 @@ function ImageUpload() {
       vision,
       {
         baseOptions: {
-          modelAssetPath: "../../shared/models/pose_landmarker_lite.task"
+          modelAssetPath: "shared/models/pose_landmarker_lite.task"
         },
         runningMode: "IMAGE"
       }

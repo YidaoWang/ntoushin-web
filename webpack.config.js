@@ -36,7 +36,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'), // 出力先を 'dist' ディレクトリに変更
     filename: "client.min.js",
-    publicPath: '/' // 公開パスをルートに設定
+    publicPath: './'
   },
   plugins: [
     new HtmlWebpackPlugin({
