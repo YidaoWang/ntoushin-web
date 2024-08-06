@@ -5,6 +5,7 @@ import { FilesetResolver, PoseLandmarker, FaceLandmarker } from '@mediapipe/task
 
 function ImageUpload() {
   const [image, setImage] = useState(null);
+  const [headRatioText, setHeadRatioText] = useState('');
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -16,17 +17,31 @@ function ImageUpload() {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
 
-        //const scaleSize = 1000 / Math.max(imgElement.width, imgElement.height);
-        const scaleSize = 1
+        const scaleSize = 600 / Math.max(imgElement.width, imgElement.height);
         canvas.width = imgElement.width * scaleSize;
         canvas.height = imgElement.height * scaleSize;
         ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
 
         canvas.toBlob(async (blob) => {
-          const { poseLandmarks, faceLandmarks } = await detectLandmarks(blob);
+          const imageBitmap = await createImageBitmap(blob);
+          const landmarkPaires = await detectLandmarkPaires(imageBitmap);
 
-          drawLandmarks(faceLandmarks, poseLandmarks)
+          const bodyAndFaceRegions = detectBodyAndFaceRegions(landmarkPaires)
+          console.log(bodyAndFaceRegions)
 
+          canvas.toBlob(async (blob) => {
+            const imageBitmap = await createImageBitmap(blob);
+            const landmarkPaires = await detectLandmarkPaires(imageBitmap);
+
+            const bodyAndFaceRegions = detectBodyAndFaceRegions(landmarkPaires)
+            console.log(bodyAndFaceRegions)
+
+            const newCanvas = await drawNtoushin(imageBitmap, bodyAndFaceRegions)
+            ctx.drawImage(newCanvas, 0, 0);
+
+          }, 'image/jpeg');
+
+          displayHeadRatio(ctx, bodyAndFaceRegions);
         }, 'image/jpeg');
       };
     }
@@ -43,18 +58,14 @@ function ImageUpload() {
     }
   };
 
-  const detectLandmarks = async (imageBlob) => {
-    const imageBitmap = await createImageBitmap(imageBlob);
+  const detectLandmarkPaires = async (imageBitmap) => {
+    const landmarkPaires = []
 
     const vision = await FilesetResolver.forVisionTasks(
       "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
     );
 
     const poseLandmarks = await detectPoseLandmarks(vision, imageBitmap);
-    let faceLandmarks = null
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    ctx.lineWidth = 2;
 
     for (const landmarks of poseLandmarks.landmarks) {
       const centerX = landmarks[0].x * imageBitmap.width;
@@ -72,25 +83,23 @@ function ImageUpload() {
       const cropY = Math.max(centerY + (top - centerY) * n, 0)
       const cropHeight = Math.min(centerY + (bottom - centerY) * n, imageBitmap.height) - cropY
 
+      // 顔のある領域から顔ランドマークを取得
       const croppedImageBitmap = await cropImageBitmap(imageBitmap, cropX, cropY, cropWidth, cropHeight)
-
       const cropprdFaceLandmarks = await detectFaceLandmarks(vision, croppedImageBitmap)
 
-      cropprdFaceLandmarks.faceLandmarks.forEach(faceLandmarks => {
-        faceLandmarks.forEach(landmark => {
-          landmark.x = (cropX + landmark.x * cropWidth) / imageBitmap.width
-          landmark.y = (cropY + landmark.y * cropHeight) / imageBitmap.height
+      if (cropprdFaceLandmarks.faceLandmarks) {
+        cropprdFaceLandmarks.faceLandmarks.forEach(faceLandmarks => {
+          faceLandmarks.forEach(landmark => {
+            landmark.x = (cropX + landmark.x * cropWidth) / imageBitmap.width
+            landmark.y = (cropY + landmark.y * cropHeight) / imageBitmap.height
+          });
         });
-      });
-
-      if (!faceLandmarks) {
-        faceLandmarks = cropprdFaceLandmarks
-      } else if (cropprdFaceLandmarks.faceLandmarks) {
-        faceLandmarks.faceLandmarks.push(cropprdFaceLandmarks.faceLandmarks.pop())
+        // 顔ランドマークが複数見つかっても、1つだけ使用
+        landmarkPaires.push({ poseLandmarks: landmarks, faceLandmarks: cropprdFaceLandmarks.faceLandmarks[0] })
       }
     };
 
-    return { poseLandmarks, faceLandmarks }
+    return landmarkPaires
   };
 
   async function cropImageBitmap(originalImageBitmap, cropX, cropY, cropWidth, cropHeight) {
@@ -137,50 +146,92 @@ function ImageUpload() {
   };
 
 
-  const drawLandmarks = (faceLandmarkerResult, poseLandmarkerResult) => {
-    console.log(faceLandmarkerResult)
-    console.log(poseLandmarkerResult)
+  const detectBodyAndFaceRegions = (landmarkPaires) => {
+    console.log(landmarkPaires)
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    ctx.lineWidth = 2;
+    const bodyAndFaceRegions = []
 
+    landmarkPaires.forEach(landmarkPaire => {
 
-    faceLandmarkerResult.faceLandmarks.forEach(faceLandmarks => {
+      const poseLandmarks = landmarkPaire.poseLandmarks
+      const faceLandmarks = landmarkPaire.faceLandmarks
+
       const centerX = faceLandmarks[4].x
       const centerY = faceLandmarks[4].y
 
-      const face_top = faceLandmarks[10].y
       const face_bottom = faceLandmarks[152].y
       const face_left = faceLandmarks[127].x
       const face_right = faceLandmarks[356].x
       const eye_height = (faceLandmarks[468].y + faceLandmarks[473].y) / 2
 
-      const head_top = centerY + (eye_height - centerY) * 4
+      const head_top = centerY + (eye_height - centerY) * 4.3
       const head_bottom = face_bottom
       const head_left = centerX + (face_left - centerX) * 1.1
       const head_right = centerX + (face_right - centerX) * 1.1
 
+      const x = head_left * canvas.width
+      const y = head_top * canvas.height
+      const width = (head_right - head_left) * canvas.width
+      const height = (head_bottom - head_top) * canvas.height
 
-      ctx.beginPath();
-      ctx.arc(head_left * canvas.width, head_top * canvas.height, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = "blue";
-      ctx.fill();
+      const body_bottom = Math.max(poseLandmarks[31].y, poseLandmarks[32].y) * canvas.height * 1.02
 
-      ctx.beginPath();
-      ctx.arc(head_right * canvas.width, head_bottom * canvas.height, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = "blue";
-      ctx.fill();
-      
+      const bodyRegion = { x: null, y, width: null, height: body_bottom - y }
+      const faceRegion = { x, y, width, height }
+
+      bodyAndFaceRegions.push({ bodyRegion, faceRegion })
     });
-    // poseLandmarkerResult.landmarks.forEach(body => {
-    //   body.forEach(landmark => {
-    //     ctx.beginPath();
-    //     ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 5, 0, 2 * Math.PI);
-    //     ctx.fillStyle = "red";
-    //     ctx.fill();
-    //   });
-    // });
+
+    return bodyAndFaceRegions
+  };
+
+
+  const drawNtoushin = (imageBitmap, bodyAndFaceRegions) => {
+    // 画像の幅と高さを取得
+    const imageWidth = imageBitmap.width;
+    const imageHeight = imageBitmap.height;
+
+    // 新しいキャンバスを作成
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    // 体と顔の領域を取得
+    const { bodyRegion, faceRegion } = bodyAndFaceRegions[0];
+
+    // 頭身の計算（体の高さ / 顔の高さ）
+    const headRatio = bodyRegion.height / faceRegion.height;
+
+    // 新しいキャンバスのサイズを設定
+    canvas.width = imageWidth;
+    canvas.height = imageHeight;
+
+    // 元の画像を描画
+    context.drawImage(imageBitmap, 0, 0);
+
+    // 顔を縦に並べて描画
+    let position_x
+    const left_space = imageWidth - (faceRegion.x + faceRegion.width)
+    if (left_space > faceRegion.width * 2) {
+      position_x = faceRegion.x + faceRegion.width * 2
+    }
+    else if (left_space > faceRegion.width) {
+      position_x = imageWidth - faceRegion.width
+    }
+    else {
+      position_x = faceRegion.x + faceRegion.width
+    }
+
+    for (let i = 0; i < Math.floor(headRatio); i++) {
+      context.drawImage(imageBitmap, faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height,
+        position_x, faceRegion.y + faceRegion.height * i, faceRegion.width, faceRegion.height);
+    }
+
+    context.drawImage(imageBitmap, faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height * (headRatio - Math.floor(headRatio)),
+      position_x, faceRegion.y + faceRegion.height * Math.floor(headRatio), faceRegion.width, faceRegion.height * (headRatio - Math.floor(headRatio)));
+
+    // 新しい画像を返却
+    return canvas;
   };
 
   const handleButtonClick = () => {
@@ -192,12 +243,19 @@ function ImageUpload() {
     fileInputRef.current.value = '';
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
+    setHeadRatioText(null)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
+  const displayHeadRatio = (ctx, bodyAndFaceRegions) => {
+    const { bodyRegion, faceRegion } = bodyAndFaceRegions[0];
+    const headRatio = bodyRegion.height / faceRegion.height;
+    setHeadRatioText(`${headRatio.toFixed(1)}`);
+  };
+
+
   return (
     <div className="container">
-      <h1>画像アップロード</h1>
       <input
         type="file"
         ref={fileInputRef}
@@ -205,13 +263,19 @@ function ImageUpload() {
         onChange={handleImageChange}
       />
       {!image ? (
-        <button className="btn btn-primary" onClick={handleButtonClick}>画像を選択</button>
+        <div>
+          <h1>🤖&lt; <b>ＡＩ</b>診断<br/>あなたは何頭身？</h1>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ marginRight: '10px' }}>全身の画像をアップロード</div>
+            <button className="btn btn-primary" onClick={handleButtonClick}>画像を選択</button>
+          </div>
+        </div>
       ) : (
         <div className="image-preview mt-3">
-          <h2>プレビュー</h2>
+          <h2>🤖&lt; あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
           <canvas ref={canvasRef} className="img-thumbnail"></canvas>
           <div>
-            <button className="btn btn-secondary mt-3" onClick={handleReset}>リセット</button>
+            <button className="btn btn-secondary mt-3" onClick={handleReset}>もう一度試す</button>
           </div>
         </div>
       )}
