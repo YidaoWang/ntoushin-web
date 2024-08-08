@@ -268,8 +268,8 @@ function ImageUpload() {
         <div className="text-center">
           <h1 className="display-1">🤖&lt; <b>ＡＩ</b>診断<br />あなたは何頭身？</h1>
           <div className="d-flex flex-column align-items-center mt-5">
-            <h2 className="lead">全身の画像をアップロード</h2>
-            <button className="btn btn-lg btn-primary" onClick={handleButtonClick}>画像を選択</button>
+            <h3 className="display-6">全身の画像をアップロード</h3>
+            <button className="btn-custom-size btn btn-primary" onClick={handleButtonClick}>画像を選択</button>
           </div>
         </div>
       ): isLoading ? ( // ロード中の表示
@@ -284,7 +284,7 @@ function ImageUpload() {
           <h2 className="display-1">🤖&lt; あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
           <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '80%', height: 'auto' }}></canvas>
           <div>
-            <button className="btn btn-lg btn-light mt-4" onClick={handleReset}>もう一度試す</button>
+            <button className="btn btn-custom-size btn-outline-secondary" onClick={handleReset}>もう一度試す</button>
           </div>
         </div>
       )}

@@ -42,3 +42,9 @@ body {
   .head-ratio-text {
     font-size: 85px;
   }
+
+  .btn-custom-size {
+    width: 200px;
+    height: 60px;
+    font-size: 18px !important;
+  }
