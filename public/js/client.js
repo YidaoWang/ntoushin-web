@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import '../css/styles.css';  // CSSファイルをインポート
-import { FilesetResolver, PoseLandmarker, FaceLandmarker } from '@mediapipe/tasks-vision';  // Mediapipeのインポート
+import '../css/styles.css';
+import { FilesetResolver, PoseLandmarker, FaceLandmarker } from '@mediapipe/tasks-vision';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function ImageUpload() {
   const [image, setImage] = useState(null);
   const [headRatioText, setHeadRatioText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -14,34 +16,33 @@ function ImageUpload() {
       const imgElement = new Image();
       imgElement.src = image;
       imgElement.onload = () => {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
+        const offscreenCanvas = document.createElement('canvas');
+        const offscreenCanvas_ctx = offscreenCanvas.getContext("2d");
 
         const scaleSize = 600 / Math.max(imgElement.width, imgElement.height);
-        canvas.width = imgElement.width * scaleSize;
-        canvas.height = imgElement.height * scaleSize;
-        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        offscreenCanvas.width = imgElement.width * scaleSize;
+        offscreenCanvas.height = imgElement.height * scaleSize;
+        offscreenCanvas_ctx.drawImage(imgElement, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
 
-        canvas.toBlob(async (blob) => {
+        offscreenCanvas.toBlob(async (blob) => {
           const imageBitmap = await createImageBitmap(blob);
           const landmarkPaires = await detectLandmarkPaires(imageBitmap);
 
-          const bodyAndFaceRegions = detectBodyAndFaceRegions(landmarkPaires)
-          console.log(bodyAndFaceRegions)
+          const bodyAndFaceRegions = detectBodyAndFaceRegions(offscreenCanvas, landmarkPaires);
+          console.log(bodyAndFaceRegions);
 
-          canvas.toBlob(async (blob) => {
-            const imageBitmap = await createImageBitmap(blob);
-            const landmarkPaires = await detectLandmarkPaires(imageBitmap);
+          const newCanvas = await drawNtoushin(imageBitmap, bodyAndFaceRegions);
 
-            const bodyAndFaceRegions = detectBodyAndFaceRegions(landmarkPaires)
-            console.log(bodyAndFaceRegions)
+          setIsLoading(false); // 処理が完了したらロード状態を解除
 
-            const newCanvas = await drawNtoushin(imageBitmap, bodyAndFaceRegions)
-            ctx.drawImage(newCanvas, 0, 0);
+          const canvas = canvasRef.current
+          const ctx = canvas.getContext("2d");
+          canvas.width = offscreenCanvas.width
+          canvas.height = offscreenCanvas.height
 
-          }, 'image/jpeg');
-
-          displayHeadRatio(ctx, bodyAndFaceRegions);
+          ctx.drawImage(newCanvas, 0, 0);
+          
+          displayHeadRatio(bodyAndFaceRegions);
         }, 'image/jpeg');
       };
     }
@@ -53,6 +54,7 @@ function ImageUpload() {
       const reader = new FileReader();
       reader.onload = (e) => {
         setImage(e.target.result);
+        setIsLoading(true);
       };
       reader.readAsDataURL(file);
     }
@@ -146,10 +148,8 @@ function ImageUpload() {
   };
 
 
-  const detectBodyAndFaceRegions = (landmarkPaires) => {
+  const detectBodyAndFaceRegions = (canvas, landmarkPaires) => {
     console.log(landmarkPaires)
-
-    const canvas = canvasRef.current;
     const bodyAndFaceRegions = []
 
     landmarkPaires.forEach(landmarkPaire => {
@@ -191,6 +191,9 @@ function ImageUpload() {
     // 画像の幅と高さを取得
     const imageWidth = imageBitmap.width;
     const imageHeight = imageBitmap.height;
+
+    console.log(imageWidth)
+    console.log(imageHeight)
 
     // 新しいキャンバスを作成
     const canvas = document.createElement('canvas');
@@ -247,15 +250,14 @@ function ImageUpload() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
-  const displayHeadRatio = (ctx, bodyAndFaceRegions) => {
+  const displayHeadRatio = (bodyAndFaceRegions) => {
     const { bodyRegion, faceRegion } = bodyAndFaceRegions[0];
     const headRatio = bodyRegion.height / faceRegion.height;
     setHeadRatioText(`${headRatio.toFixed(1)}`);
   };
 
-
   return (
-    <div className="container">
+    <div className="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
       <input
         type="file"
         ref={fileInputRef}
@@ -263,19 +265,26 @@ function ImageUpload() {
         onChange={handleImageChange}
       />
       {!image ? (
-        <div>
-          <h1>🤖&lt; <b>ＡＩ</b>診断<br/>あなたは何頭身？</h1>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-            <div style={{ marginRight: '10px' }}>全身の画像をアップロード</div>
-            <button className="btn btn-primary" onClick={handleButtonClick}>画像を選択</button>
+        <div className="text-center">
+          <h1 className="display-1">🤖&lt; <b>ＡＩ</b>診断<br />あなたは何頭身？</h1>
+          <div className="d-flex flex-column align-items-center mt-5">
+            <h2 className="lead">全身の画像をアップロード</h2>
+            <button className="btn btn-lg btn-primary" onClick={handleButtonClick}>画像を選択</button>
+          </div>
+        </div>
+      ): isLoading ? ( // ロード中の表示
+        <div className="text-center">
+          <h2 className="display-4">診断中...</h2>
+          <div className="spinner-border" role="status">
+            <span className="sr-only">Loading...</span>
           </div>
         </div>
       ) : (
-        <div className="image-preview mt-3">
-          <h2>🤖&lt; あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
-          <canvas ref={canvasRef} className="img-thumbnail"></canvas>
+        <div className="image-preview text-center mt-5">
+          <h2 className="display-1">🤖&lt; あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
+          <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '80%', height: 'auto' }}></canvas>
           <div>
-            <button className="btn btn-secondary mt-3" onClick={handleReset}>もう一度試す</button>
+            <button className="btn btn-lg btn-light mt-4" onClick={handleReset}>もう一度試す</button>
           </div>
         </div>
       )}
