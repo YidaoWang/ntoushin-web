@@ -271,7 +271,7 @@ function HeadRatioCalculator() {
       />
       {!image ? (
         <div className="text-center">
-          <h1 className="display-1">🤖&lt; <strong>ＡＩ診断<br />あなたは何頭身？</strong></h1>
+          <h1 className="display-1"><strong>ＡＩ診断<br />あなたは何頭身？</strong></h1>
           <div className="d-flex flex-column align-items-center mt-5">
             <h3 className="display-6">全身の画像をアップロード</h3>
             <button className="btn-custom-size btn btn-primary" onClick={handleButtonClick}>画像を選択</button>
@@ -279,7 +279,7 @@ function HeadRatioCalculator() {
         </div>
       ) : (
         <div className="image-preview text-center mt-5">
-          <h2 className="display-1">🤖&lt; あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
+          <h2 className="display-1">あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
           <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '80%', height: 'auto' }}></canvas>
           <p>
             <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-hashtags="頭身チェッカー" data-show-count="false">Tweet</a>
