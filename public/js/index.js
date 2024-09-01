@@ -12,6 +12,11 @@ function HeadRatioCalculator() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://platform.twitter.com/widgets.js';
+    script.async = true;
+    document.body.appendChild(script);
+
     if (image && canvasRef.current) {
       const imgElement = new Image();
       imgElement.src = image;
@@ -275,8 +280,10 @@ function HeadRatioCalculator() {
       ) : (
         <div className="image-preview text-center mt-5">
           <h2 className="display-1">🤖&lt; あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
-          <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-size="large" data-hashtags="頭身チェッカー" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
           <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '80%', height: 'auto' }}></canvas>
+          <p>
+            <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-hashtags="頭身チェッカー" data-show-count="false">Tweet</a>
+          </p>
           <div>
             <button className="btn btn-custom-size btn-outline-secondary" onClick={handleReset}>もう一度試す</button>
           </div>
