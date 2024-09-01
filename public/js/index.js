@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import '../css/styles.css';
 import { FilesetResolver, PoseLandmarker, FaceLandmarker } from '@mediapipe/tasks-vision';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-function ImageUpload() {
+function HeadRatioCalculator() {
   const [image, setImage] = useState(null);
   const [headRatioText, setHeadRatioText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +41,7 @@ function ImageUpload() {
           canvas.height = offscreenCanvas.height
 
           ctx.drawImage(newCanvas, 0, 0);
-          
+
           displayHeadRatio(bodyAndFaceRegions);
         }, 'image/jpeg');
       };
@@ -257,7 +257,7 @@ function ImageUpload() {
   };
 
   return (
-    <div className="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
+    <div className="container-fluid vh-100 d-flex flex-column justify-content-center">
       <input
         type="file"
         ref={fileInputRef}
@@ -266,30 +266,36 @@ function ImageUpload() {
       />
       {!image ? (
         <div className="text-center">
-          <h1 className="display-1">🤖&lt; <b>ＡＩ</b>診断<br />あなたは何頭身？</h1>
+          <h1 className="display-1">🤖&lt; <strong>ＡＩ診断<br />あなたは何頭身？</strong></h1>
           <div className="d-flex flex-column align-items-center mt-5">
             <h3 className="display-6">全身の画像をアップロード</h3>
             <button className="btn-custom-size btn btn-primary" onClick={handleButtonClick}>画像を選択</button>
           </div>
         </div>
-      ): isLoading ? ( // ロード中の表示
-        <div className="text-center">
-          <h2 className="display-4">診断中...</h2>
-          <div className="spinner-border" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-        </div>
       ) : (
         <div className="image-preview text-center mt-5">
           <h2 className="display-1">🤖&lt; あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
+          <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-size="large" data-hashtags="頭身チェッカー" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
           <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '80%', height: 'auto' }}></canvas>
           <div>
             <button className="btn btn-custom-size btn-outline-secondary" onClick={handleReset}>もう一度試す</button>
           </div>
+        
+          {/* ロード中の表示を重ねる */}
+          {isLoading && (
+            <div className="loading-overlay text-center">
+              <h2 className="display-4">診断中...</h2>
+              <div className="spinner-border" role="status">
+                <span className="sr-only">Loading...</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
+
   );
 }
 
-ReactDOM.render(<ImageUpload />, document.getElementById('app'));
+const root = createRoot(document.getElementById('app'));
+root.render(<HeadRatioCalculator />);

@@ -6,7 +6,7 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   context: path.join(__dirname, "public"),
-  entry: "./js/client.js",
+  entry: "./js/index.js",
   devServer: {
     static: {
       directory: path.join(__dirname, 'dist'),
@@ -32,10 +32,11 @@ module.exports = {
         use: ['style-loader', 'css-loader']
       }
     ]
+    
   },
   output: {
     path: path.resolve(__dirname, 'dist'), // 出力先を 'dist' ディレクトリに変更
-    filename: "client.min.js",
+    filename: "index.min.js",
     publicPath: '/'
   },
   plugins: [
