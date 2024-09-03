@@ -8,6 +8,7 @@ function HeadRatioCalculator() {
   const [image, setImage] = useState(null);
   const [headRatioText, setHeadRatioText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isDetected, setIsDetected] = useState(false);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -32,6 +33,7 @@ function HeadRatioCalculator() {
         offscreenCanvas.toBlob(async (blob) => {
           const imageBitmap = await createImageBitmap(blob);
           const landmarkPaires = await detectLandmarkPaires(imageBitmap);
+          console.log(landmarkPaires)
 
           const bodyAndFaceRegions = detectBodyAndFaceRegions(offscreenCanvas, landmarkPaires);
           console.log(bodyAndFaceRegions);
@@ -154,13 +156,16 @@ function HeadRatioCalculator() {
 
 
   const detectBodyAndFaceRegions = (canvas, landmarkPaires) => {
-    console.log(landmarkPaires)
     const bodyAndFaceRegions = []
 
     landmarkPaires.forEach(landmarkPaire => {
 
       const poseLandmarks = landmarkPaire.poseLandmarks
       const faceLandmarks = landmarkPaire.faceLandmarks
+
+      if(!faceLandmarks){
+        return
+      }
 
       const centerX = faceLandmarks[4].x
       const centerY = faceLandmarks[4].y
@@ -181,6 +186,9 @@ function HeadRatioCalculator() {
       const height = (head_bottom - head_top) * canvas.height
 
       const body_bottom = Math.max(poseLandmarks[31].y, poseLandmarks[32].y) * canvas.height * 1.02
+      if (body_bottom > canvas.height) {
+        return
+      }
 
       const bodyRegion = { x: null, y, width: null, height: body_bottom - y }
       const faceRegion = { x, y, width, height }
@@ -204,12 +212,6 @@ function HeadRatioCalculator() {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
 
-    // 体と顔の領域を取得
-    const { bodyRegion, faceRegion } = bodyAndFaceRegions[0];
-
-    // 頭身の計算（体の高さ / 顔の高さ）
-    const headRatio = bodyRegion.height / faceRegion.height;
-
     // 新しいキャンバスのサイズを設定
     canvas.width = imageWidth;
     canvas.height = imageHeight;
@@ -217,26 +219,34 @@ function HeadRatioCalculator() {
     // 元の画像を描画
     context.drawImage(imageBitmap, 0, 0);
 
-    // 顔を縦に並べて描画
-    let position_x
-    const left_space = imageWidth - (faceRegion.x + faceRegion.width)
-    if (left_space > faceRegion.width * 2) {
-      position_x = faceRegion.x + faceRegion.width * 2
-    }
-    else if (left_space > faceRegion.width) {
-      position_x = imageWidth - faceRegion.width
-    }
-    else {
-      position_x = faceRegion.x + faceRegion.width
-    }
+    if (bodyAndFaceRegions.length >= 1) {
+      // 体と顔の領域を取得
+      const { bodyRegion, faceRegion } = bodyAndFaceRegions[0];
 
-    for (let i = 0; i < Math.floor(headRatio); i++) {
-      context.drawImage(imageBitmap, faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height,
-        position_x, faceRegion.y + faceRegion.height * i, faceRegion.width, faceRegion.height);
-    }
+      // 頭身の計算（体の高さ / 顔の高さ）
+      const headRatio = bodyRegion.height / faceRegion.height;
 
-    context.drawImage(imageBitmap, faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height * (headRatio - Math.floor(headRatio)),
-      position_x, faceRegion.y + faceRegion.height * Math.floor(headRatio), faceRegion.width, faceRegion.height * (headRatio - Math.floor(headRatio)));
+      // 顔を縦に並べて描画
+      let position_x
+      const left_space = imageWidth - (faceRegion.x + faceRegion.width)
+      if (left_space > faceRegion.width * 2) {
+        position_x = faceRegion.x + faceRegion.width * 2
+      }
+      else if (left_space > faceRegion.width) {
+        position_x = imageWidth - faceRegion.width
+      }
+      else {
+        position_x = faceRegion.x + faceRegion.width
+      }
+
+      for (let i = 0; i < Math.floor(headRatio); i++) {
+        context.drawImage(imageBitmap, faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height,
+          position_x, faceRegion.y + faceRegion.height * i, faceRegion.width, faceRegion.height);
+      }
+
+      context.drawImage(imageBitmap, faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height * (headRatio - Math.floor(headRatio)),
+        position_x, faceRegion.y + faceRegion.height * Math.floor(headRatio), faceRegion.width, faceRegion.height * (headRatio - Math.floor(headRatio)));
+    }
 
     // 新しい画像を返却
     return canvas;
@@ -256,9 +266,14 @@ function HeadRatioCalculator() {
   };
 
   const displayHeadRatio = (bodyAndFaceRegions) => {
-    const { bodyRegion, faceRegion } = bodyAndFaceRegions[0];
-    const headRatio = bodyRegion.height / faceRegion.height;
-    setHeadRatioText(`${headRatio.toFixed(1)}`);
+    if (bodyAndFaceRegions.length >= 1) {
+      setIsDetected(true)
+      const { bodyRegion, faceRegion } = bodyAndFaceRegions[0];
+      const headRatio = bodyRegion.height / faceRegion.height;
+      setHeadRatioText(`${headRatio.toFixed(1)}`);
+    } else {
+      setIsDetected(false)
+    }
   };
 
   return (
@@ -279,15 +294,19 @@ function HeadRatioCalculator() {
         </div>
       ) : (
         <div className="image-preview text-center mt-5">
-          <h2 className="display-1">あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
+          {isDetected ? (
+            <h2 className="display-1">あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
+          ) : (
+            <h2 className="display-4">見つかりません :&#40;</h2>
+          )}
           <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '80%', height: 'auto' }}></canvas>
           <p>
-            <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-hashtags="頭身チェッカー" data-show-count="false">Tweet</a>
+            <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" data-size="large" class="twitter-share-button" data-hashtags="頭身チェッカー" data-show-count="false">Tweet</a>
           </p>
           <div>
             <button className="btn btn-custom-size btn-outline-secondary" onClick={handleReset}>もう一度試す</button>
           </div>
-        
+
           {/* ロード中の表示を重ねる */}
           {isLoading && (
             <div className="loading-overlay text-center">
