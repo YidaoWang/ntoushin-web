@@ -346,7 +346,7 @@ function HeadRatioCalculator() {
           </div>
           {isDetected && (
             <div>
-              <h2 className="display-7"> プロポーションLv.　 <b className="display-1"> {headRatioLevel}</b></h2>
+              <h2 className="display-7"> プロポーションレベル　 <b className="display-1"> {headRatioLevel}</b></h2>
               
               <img src={getImageForHeadRatio(headRatioText)} alt={`評価 ${headRatioText}`} className="my-4" style={{ width: '250px', marginLeft: '20px' }} />
               <div>
