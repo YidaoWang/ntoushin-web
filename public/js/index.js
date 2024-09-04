@@ -9,17 +9,13 @@ function HeadRatioCalculator() {
   const [headRatioText, setHeadRatioText] = useState('');
   const [headRatioLevel, setHeadRatioLevel] = useState('');
   const [LevelDetails, setLevelDetails] = useState('');
+  const [xImageUrl, setXImageUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isDetected, setIsDetected] = useState(false);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://platform.twitter.com/widgets.js';
-    script.async = true;
-    document.body.appendChild(script);
-
     if (image && canvasRef.current) {
       const imgElement = new Image();
       imgElement.src = image;
@@ -48,6 +44,12 @@ function HeadRatioCalculator() {
           ctx.drawImage(newCanvas, 0, 0);
 
           displayHeadRatio(bodyAndFaceRegions);
+
+          // X Post読み込み
+          const script = document.createElement('script');
+          script.src = 'https://platform.twitter.com/widgets.js';
+          script.async = true;
+          document.body.appendChild(script);
         }, 'image/jpeg');
       };
     }
@@ -256,7 +258,10 @@ function HeadRatioCalculator() {
     fileInputRef.current.value = '';
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
+    setHeadRatioLevel(null)
+    setLevelDetails(null)
     setHeadRatioText(null)
+    setXImageUrl(null)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
@@ -268,6 +273,7 @@ function HeadRatioCalculator() {
       setHeadRatioLevel(getHeadRatioLevel(headRatio))
       setLevelDetails(getILevelDetails(headRatio))
       setHeadRatioText(`${headRatio.toFixed(1)}`);
+      setXImageUrl(getXImageUrl(headRatio))
     } else {
       setIsDetected(false)
     }
@@ -280,8 +286,6 @@ function HeadRatioCalculator() {
     if (ratio >= 6.5) return 'C';
     return 'D';
   };
-
-
 
   const getImageForHeadRatio = (ratio) => {
     console.log(ratio)
@@ -296,6 +300,24 @@ function HeadRatioCalculator() {
         return 'shared/images/C.webp';
       case 'D':
         return 'shared/images/D.webp';
+      default:
+        return null;
+    }
+  };
+
+  const getXImageUrl = (ratio) => {
+    console.log(ratio)
+    switch (getHeadRatioLevel(ratio)) {
+      case 'S':
+        return 'https://x.com/to_shin_checker/status/1831350220015407352/photo/1';
+      case 'A':
+        return 'https://x.com/to_shin_checker/status/1831350189040476418/photo/1';
+      case 'B':
+        return 'https://x.com/to_shin_checker/status/1831350151568609571/photo/1';
+      case 'C':
+        return 'https://x.com/to_shin_checker/status/1831350096409268677/photo/1';
+      case 'D':
+        return 'https://x.com/to_shin_checker/status/1831350044580323574/photo/1';
       default:
         return null;
     }
@@ -347,17 +369,17 @@ function HeadRatioCalculator() {
           {isDetected && (
             <div>
               <h2 className="display-7"> プロポーションレベル　 <b className="display-1"> {headRatioLevel}</b></h2>
-              
+
               <img src={getImageForHeadRatio(headRatioText)} alt={`評価 ${headRatioText}`} className="my-4" style={{ width: '250px', marginLeft: '20px' }} />
               <div>
                 <h3 className="display-7"> {LevelDetails}</h3>
               </div>
               <br />
+              <p>
+                <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" data-size="large" className="twitter-share-button" data-text={`わたしは ${headRatioText} 頭身！ プロポーションレベル【${headRatioLevel}】 \n${xImageUrl}`} data-hashtags="頭身チェッカー" data-show-count="false"></a>
+              </p>
             </div>
           )}
-          <p>
-            <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" data-size="large" className="twitter-share-button" data-hashtags="頭身チェッカー" data-show-count="false">Tweet</a>
-          </p>
           <div>
             <button className="btn btn-custom-size btn-outline-secondary" onClick={handleReset}>もう一度試す</button>
           </div>
