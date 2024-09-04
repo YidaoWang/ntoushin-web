@@ -47,7 +47,7 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'shared/models', to: 'shared/models' } // 'public/shared/models' ディレクトリを 'dist/shared/models' にコピー
+        { from: 'shared', to: 'shared' } // 'public/shared/models' ディレクトリを 'dist/shared/models' にコピー
       ]
     }),
     ...(!debug ? [

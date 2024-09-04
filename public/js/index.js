@@ -7,6 +7,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 function HeadRatioCalculator() {
   const [image, setImage] = useState(null);
   const [headRatioText, setHeadRatioText] = useState('');
+  const [headRatioLevel, setHeadRatioLevel] = useState('');
+  const [LevelDetails, setLevelDetails] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isDetected, setIsDetected] = useState(false);
   const fileInputRef = useRef(null);
@@ -33,11 +35,7 @@ function HeadRatioCalculator() {
         offscreenCanvas.toBlob(async (blob) => {
           const imageBitmap = await createImageBitmap(blob);
           const landmarkPaires = await detectLandmarkPaires(imageBitmap);
-          console.log(landmarkPaires)
-
           const bodyAndFaceRegions = detectBodyAndFaceRegions(offscreenCanvas, landmarkPaires);
-          console.log(bodyAndFaceRegions);
-
           const newCanvas = await drawNtoushin(imageBitmap, bodyAndFaceRegions);
 
           setIsLoading(false); // 処理が完了したらロード状態を解除
@@ -205,9 +203,6 @@ function HeadRatioCalculator() {
     const imageWidth = imageBitmap.width;
     const imageHeight = imageBitmap.height;
 
-    console.log(imageWidth)
-    console.log(imageHeight)
-
     // 新しいキャンバスを作成
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
@@ -270,9 +265,56 @@ function HeadRatioCalculator() {
       setIsDetected(true)
       const { bodyRegion, faceRegion } = bodyAndFaceRegions[0];
       const headRatio = bodyRegion.height / faceRegion.height;
+      setHeadRatioLevel(getHeadRatioLevel(headRatio))
+      setLevelDetails(getILevelDetails(headRatio))
       setHeadRatioText(`${headRatio.toFixed(1)}`);
     } else {
       setIsDetected(false)
+    }
+  };
+
+  const getHeadRatioLevel = (ratio) => {
+    if (ratio >= 8.0) return 'S';
+    if (ratio >= 7.5) return 'A';
+    if (ratio >= 7.0) return 'B';
+    if (ratio >= 6.5) return 'C';
+    return 'D';
+  };
+
+
+
+  const getImageForHeadRatio = (ratio) => {
+    console.log(ratio)
+    switch (getHeadRatioLevel(ratio)) {
+      case 'S':
+        return 'shared/images/S.webp';
+      case 'A':
+        return 'shared/images/A.webp';
+      case 'B':
+        return 'shared/images/B.webp';
+      case 'C':
+        return 'shared/images/C.webp';
+      case 'D':
+        return 'shared/images/D.webp';
+      default:
+        return null;
+    }
+  };
+
+  const getILevelDetails = (ratio) => {
+    switch (getHeadRatioLevel(ratio)) {
+      case 'S':
+        return 'あなたのプロポーションはトップアイドルレベルです。';
+      case 'A':
+        return 'あなたのプロポーションはモデルレベルです。';
+      case 'B':
+        return 'あなたのプロポーションは一般人レベルです。';
+      case 'C':
+        return 'あなたのプロポーションは平均よりやや下です。';
+      case 'D':
+        return 'あなたのプロポーションは子供レベルです。';
+      default:
+        return null;
     }
   };
 
@@ -295,19 +337,30 @@ function HeadRatioCalculator() {
       ) : (
         <div className="image-preview text-center mt-5">
           {isDetected ? (
-            <h2 className="display-1">あなたは: <b className="head-ratio-text">{headRatioText}</b>頭身</h2>
+              <h1 className="display-4"> あなたは　<b className="display-1">{headRatioText}</b>　頭身</h1>
           ) : (
             <h2 className="display-4">見つかりません :&#40;</h2>
           )}
-          <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '80%', height: 'auto' }}></canvas>
+          <div className="d-flex justify-content-center align-items-center">
+            <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '50%', height: 'auto' }}></canvas>
+            {isDetected && (
+              <div>
+              <h2 className="display-6"> <b>プロポーションレベル</b></h2>
+              <h2 className="display-1"> <b>{headRatioLevel}</b></h2>
+              <img src={getImageForHeadRatio(headRatioText)} alt={`評価 ${headRatioText}`} className="my-4" style={{ width: '300px', marginLeft: '20px' }} />
+              <div>
+              <b className="display-6" style={{marginLeft: '20px' }}> {LevelDetails}</b>
+              </div>
+              </div>
+            )}
+          </div>
           <p>
-            <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" data-size="large" class="twitter-share-button" data-hashtags="頭身チェッカー" data-show-count="false">Tweet</a>
+            <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" data-size="large" className="twitter-share-button" data-hashtags="頭身チェッカー" data-show-count="false">Tweet</a>
           </p>
           <div>
             <button className="btn btn-custom-size btn-outline-secondary" onClick={handleReset}>もう一度試す</button>
           </div>
 
-          {/* ロード中の表示を重ねる */}
           {isLoading && (
             <div className="loading-overlay text-center">
               <h2 className="display-4">診断中...</h2>
@@ -319,7 +372,6 @@ function HeadRatioCalculator() {
         </div>
       )}
     </div>
-
   );
 }
 
