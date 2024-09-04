@@ -161,7 +161,7 @@ function HeadRatioCalculator() {
       const poseLandmarks = landmarkPaire.poseLandmarks
       const faceLandmarks = landmarkPaire.faceLandmarks
 
-      if(!faceLandmarks){
+      if (!faceLandmarks) {
         return
       }
 
@@ -337,23 +337,24 @@ function HeadRatioCalculator() {
       ) : (
         <div className="image-preview text-center mt-5">
           {isDetected ? (
-              <h1 className="display-4"> あなたは　<b className="display-1">{headRatioText}</b>　頭身</h1>
+            <h1 className="display-6"> あなたは　<b className="display-1">{headRatioText}</b>　頭身</h1>
           ) : (
-            <h2 className="display-4">見つかりません :&#40;</h2>
+            <h2 className="display-6">見つかりません :&#40;</h2>
           )}
           <div className="d-flex justify-content-center align-items-center">
             <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '50%', height: 'auto' }}></canvas>
-            {isDetected && (
-              <div>
-              <h2 className="display-6"> <b>プロポーションレベル</b></h2>
-              <h2 className="display-1"> <b>{headRatioLevel}</b></h2>
-              <img src={getImageForHeadRatio(headRatioText)} alt={`評価 ${headRatioText}`} className="my-4" style={{ width: '300px', marginLeft: '20px' }} />
-              <div>
-              <b className="display-6" style={{marginLeft: '20px' }}> {LevelDetails}</b>
-              </div>
-              </div>
-            )}
           </div>
+          {isDetected && (
+            <div>
+              <h2 className="display-7"> プロポーションLv.　 <b className="display-1"> {headRatioLevel}</b></h2>
+              
+              <img src={getImageForHeadRatio(headRatioText)} alt={`評価 ${headRatioText}`} className="my-4" style={{ width: '250px', marginLeft: '20px' }} />
+              <div>
+                <h3 className="display-7"> {LevelDetails}</h3>
+              </div>
+              <br />
+            </div>
+          )}
           <p>
             <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" data-size="large" className="twitter-share-button" data-hashtags="頭身チェッカー" data-show-count="false">Tweet</a>
           </p>
