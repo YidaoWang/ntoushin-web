@@ -319,7 +319,7 @@ function HeadRatioCalculator() {
   };
 
   return (
-    <div className="container-fluid vh-100 d-flex flex-column justify-content-center">
+    <div>
       <input
         type="file"
         ref={fileInputRef}
