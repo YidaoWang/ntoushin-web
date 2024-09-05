@@ -254,15 +254,17 @@ function HeadRatioCalculator() {
   };
 
   const handleReset = () => {
-    setImage(null);
-    fileInputRef.current.value = '';
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    setHeadRatioLevel(null)
-    setLevelDetails(null)
-    setHeadRatioText(null)
-    setXImageUrl(null)
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    window.location.reload();
+    // setImage(null);
+    // fileInputRef.current.value = '';
+    // const canvas = canvasRef.current;
+    // const ctx = canvas.getContext("2d");
+    // setHeadRatioLevel(null)
+    // setLevelDetails(null)
+    // setHeadRatioText(null)
+    // setXImageUrl(null)
+    // ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
   const displayHeadRatio = (bodyAndFaceRegions) => {
