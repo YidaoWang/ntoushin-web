@@ -254,17 +254,7 @@ function HeadRatioCalculator() {
   };
 
   const handleReset = () => {
-    
     window.location.reload();
-    // setImage(null);
-    // fileInputRef.current.value = '';
-    // const canvas = canvasRef.current;
-    // const ctx = canvas.getContext("2d");
-    // setHeadRatioLevel(null)
-    // setLevelDetails(null)
-    // setHeadRatioText(null)
-    // setXImageUrl(null)
-    // ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
   const displayHeadRatio = (bodyAndFaceRegions) => {
@@ -293,15 +283,15 @@ function HeadRatioCalculator() {
     console.log(ratio)
     switch (getHeadRatioLevel(ratio)) {
       case 'S':
-        return 'shared/images/S.webp';
+        return 'shared/images/S.png';
       case 'A':
-        return 'shared/images/A.webp';
+        return 'shared/images/A.png';
       case 'B':
-        return 'shared/images/B.webp';
+        return 'shared/images/B.png';
       case 'C':
-        return 'shared/images/C.webp';
+        return 'shared/images/C.png';
       case 'D':
-        return 'shared/images/D.webp';
+        return 'shared/images/D.png';
       default:
         return null;
     }
@@ -352,7 +342,7 @@ function HeadRatioCalculator() {
       />
       {!image ? (
         <div className="text-center">
-          <h1 className="display-1"><strong>ＡＩ診断<br />あなたは何頭身？</strong></h1>
+          <img src="shared/images/1.png" className="my-4"/>
           <div className="d-flex flex-column align-items-center mt-5">
             <h3 className="display-6">全身の画像をアップロード</h3>
             <button className="btn-custom-size btn btn-primary" onClick={handleButtonClick}>画像を選択</button>
@@ -370,15 +360,13 @@ function HeadRatioCalculator() {
           </div>
           {isDetected && (
             <div>
-              <h2 className="display-7"> プロポーションレベル　 <b className="display-1"> {headRatioLevel}</b></h2>
-
-              <img src={getImageForHeadRatio(headRatioText)} alt={`評価 ${headRatioText}`} className="my-4" style={{ width: '250px', marginLeft: '20px' }} />
+              <img src={getImageForHeadRatio(headRatioText)} alt={`評価 ${headRatioText}`} className="my-4" />
               <div>
                 <h3 className="display-7"> {LevelDetails}</h3>
               </div>
               <br />
               <p>
-                <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" data-size="large" className="twitter-share-button" data-text={`わたしは ${headRatioText} 頭身！ プロポーションレベル【${headRatioLevel}】 \n${xImageUrl}`} data-hashtags="頭身チェッカー" data-show-count="false"></a>
+                <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" data-size="large" className="twitter-share-button" data-text={`#頭身診断\nあなたは【${headRatioText}】頭身！ \n\nプロポーションレベル【${headRatioLevel}】\n${LevelDetails}\n\n`} data-hashtags="頭身診断" data-show-count="false"></a>
               </p>
             </div>
           )}
