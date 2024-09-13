@@ -53,12 +53,6 @@ function HeadRatioCalculator() {
         }, 'image/jpeg');
       };
     }
-
-    // コンポーネントがアンマウントされたときにスクリプトを削除するクリーンアップ
-    return () => {
-      document.body.removeChild(script1);
-      document.body.removeChild(script2);
-    };
   }, [image]);
 
   const handleImageChange = async (event) => {
