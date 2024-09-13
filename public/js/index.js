@@ -352,7 +352,7 @@ function HeadRatioCalculator() {
       ) : (
         <div className="image-preview text-center mt-5">
           {isDetected ? (
-            <h1 className="display-6"> あなたは　<b className="display-1">{headRatioText}</b>　頭身</h1>
+            <h2 className="display-7"> あなたは【{headRatioText}】頭身</h2>
           ) : (
             <h2 className="display-6">見つかりません :&#40;</h2>
           )}

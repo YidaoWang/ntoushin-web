@@ -44,9 +44,9 @@ body {
 }
 
 .btn-custom-size {
-  width: 200px;
-  height: 60px;
-  font-size: 18px !important;
+  width: 150px;
+  height: 45px;
+  font-size: 16px !important;
 }
 
 .full-screen {
@@ -79,6 +79,16 @@ body {
 
 .my-4 {
   width: 90%;
-  max-width: 600px;
+  max-width: 300px;
   height: auto;
+}
+
+/* 親要素にFlexboxを設定 */
+.container {
+  display: block;
+}
+
+.widget {
+  display: flex;
+  justify-content: center;
 }
