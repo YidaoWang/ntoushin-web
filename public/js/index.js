@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import '../css/styles.css';
 import { FilesetResolver, PoseLandmarker, FaceLandmarker } from '@mediapipe/tasks-vision';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { FaDownload } from "react-icons/fa";
 
 function HeadRatioCalculator() {
   const [image, setImage] = useState(null);
@@ -16,6 +17,7 @@ function HeadRatioCalculator() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
+
     if (image && canvasRef.current) {
       const imgElement = new Image();
       imgElement.src = image;
@@ -332,6 +334,18 @@ function HeadRatioCalculator() {
     }
   };
 
+  // 画像をダウンロードする処理
+  const downloadImage = () => {
+    const canvas = canvasRef.current;
+    const image = canvas.toDataURL("image/png");
+
+    // <a>タグを作成してダウンロードリンクを実行
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = "toshin_image.png";
+    link.click();
+  };
+
   return (
     <div>
       <input
@@ -342,7 +356,7 @@ function HeadRatioCalculator() {
       />
       {!image ? (
         <div className="text-center">
-          <img src="shared/images/1.png" className="my-4" />
+          <img src="shared/images/1.png" className="my-5" />
           <div className="d-flex flex-column align-items-center mt-5">
             <h3 className="display-6">全身の画像をアップロード</h3>
             <button className="btn-custom-size btn btn-primary" onClick={handleButtonClick}>画像を選択</button>
@@ -356,12 +370,23 @@ function HeadRatioCalculator() {
           ) : (
             <h2 className="display-6">見つかりません :&#40;</h2>
           )}
-          <div className="d-flex justify-content-center align-items-center">
+          <div className="justify-content-center align-items-center">
             <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '50%', height: 'auto' }}></canvas>
+            <button
+              onClick={downloadImage}
+              style={{
+                backgroundColor: "transparent",
+                border: "none",
+                cursor: "pointer",
+              }}
+              title="画像をダウンロード"
+            >
+              <FaDownload size={20} color="black" />
+            </button>
           </div>
           {isDetected && (
             <div>
-              <img src={getImageForHeadRatio(headRatioText)} alt={`評価 ${headRatioText}`} className="my-4" />
+              <img src={getImageForHeadRatio(headRatioText)} alt={`評価 ${headRatioText}`} className="my-5" />
               <div>
                 <h3 className="display-7"> {LevelDetails}</h3>
               </div>

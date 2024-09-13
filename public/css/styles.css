@@ -78,8 +78,14 @@ body {
 }
 
 .my-4 {
-  width: 90%;
+  margin-left: 30px;
   max-width: 300px;
+  height: auto;
+}
+
+.my-5 {
+  width: 90%;
+  max-width: 350px;
   height: auto;
 }
 
