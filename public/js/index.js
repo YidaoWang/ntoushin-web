@@ -38,10 +38,10 @@ function HeadRatioCalculator() {
     const script2 = document.createElement("script");
     script2.src = "//xml.affiliate.rakuten.co.jp/widget/js/rakuten_widget.js";
     script2.type = "text/javascript";
+    document.body.appendChild(script1);
+    document.body.appendChild(script2);
 
     if (image && canvasRef.current) {
-      document.body.appendChild(script1);
-      document.body.appendChild(script2);
       const imgElement = new Image();
       imgElement.src = image;
       imgElement.onload = () => {
