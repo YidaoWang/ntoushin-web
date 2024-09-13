@@ -16,7 +16,32 @@ function HeadRatioCalculator() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
+    // スクリプトを生成してDOMに追加
+    const script1 = document.createElement("script");
+    script1.type = "text/javascript";
+    script1.text = `
+        rakuten_affiliateId="0ea62065.34400275.0ea62066.204f04c0";
+        rakuten_items="ctsmatch";
+        rakuten_genreId="0";
+        rakuten_recommend="off";
+        rakuten_design="slide";
+        rakuten_size="120x240";
+        rakuten_target="_blank";
+        rakuten_border="off";
+        rakuten_auto_mode="off";
+        rakuten_adNetworkId="a8Net";
+        rakuten_adNetworkUrl="https%3A%2F%2Frpx.a8.net%2Fsvt%2Fejp%3Fa8mat%3D3ZFMDE%2BMMHRM%2B2HOM%2BBS629%26rakuten%3Dy%26a8ejpredirect%3D";
+        rakuten_pointbackId="a24091300546_3ZFMDE_MMHRM_2HOM_BS629";
+        rakuten_mediaId="20011816";
+      `;
+
+    const script2 = document.createElement("script");
+    script2.src = "//xml.affiliate.rakuten.co.jp/widget/js/rakuten_widget.js";
+    script2.type = "text/javascript";
+
     if (image && canvasRef.current) {
+      document.body.appendChild(script1);
+      document.body.appendChild(script2);
       const imgElement = new Image();
       imgElement.src = image;
       imgElement.onload = () => {
@@ -53,6 +78,12 @@ function HeadRatioCalculator() {
         }, 'image/jpeg');
       };
     }
+
+    // コンポーネントがアンマウントされたときにスクリプトを削除するクリーンアップ
+    return () => {
+      document.body.removeChild(script1);
+      document.body.removeChild(script2);
+    };
   }, [image]);
 
   const handleImageChange = async (event) => {
@@ -342,7 +373,15 @@ function HeadRatioCalculator() {
       />
       {!image ? (
         <div className="text-center">
-          <img src="shared/images/1.png" className="my-4"/>
+          <img
+            border="0"
+            width="1"
+            height="1"
+            src="https://www12.a8.net/0.gif?a8mat=3ZFMDE+MMHRM+2HOM+BS629"
+            alt=""
+          />
+          <br />
+          <img src="shared/images/1.png" className="my-4" />
           <div className="d-flex flex-column align-items-center mt-5">
             <h3 className="display-6">全身の画像をアップロード</h3>
             <button className="btn-custom-size btn btn-primary" onClick={handleButtonClick}>画像を選択</button>
