@@ -346,6 +346,7 @@ function HeadRatioCalculator() {
           <div className="d-flex flex-column align-items-center mt-5">
             <h3 className="display-6">全身の画像をアップロード</h3>
             <button className="btn-custom-size btn btn-primary" onClick={handleButtonClick}>画像を選択</button>
+            <p>※画像はサーバにはアップロードされず、お使いのデバイスで処理されます。</p>
           </div>
         </div>
       ) : (
