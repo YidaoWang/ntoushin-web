@@ -32,7 +32,6 @@ module.exports = {
         use: ['style-loader', 'css-loader']
       }
     ]
-    
   },
   output: {
     path: path.resolve(__dirname, 'dist'), // 出力先を 'dist' ディレクトリに変更
@@ -47,7 +46,8 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'shared', to: 'shared' } // 'public/shared/models' ディレクトリを 'dist/shared/models' にコピー
+        { from: 'shared', to: 'shared' }, // 'public/shared' ディレクトリを 'dist/shared' にコピー
+        { from: 'ads.txt', to: 'ads.txt' }  // 'public/ads.txt' を 'dist/ads.txt' にコピー
       ]
     }),
     ...(!debug ? [
