@@ -371,7 +371,7 @@ function HeadRatioCalculator() {
             <h2 className="display-6">見つかりません :&#40;</h2>
           )}
           <div className="justify-content-center align-items-center">
-            <canvas ref={canvasRef} className="img-thumbnail my-4" style={{ maxWidth: '50%', height: 'auto' }}></canvas>
+            <canvas ref={canvasRef} className="img-thumbnail my-4"></canvas>
             <button
               onClick={downloadImage}
               style={{
